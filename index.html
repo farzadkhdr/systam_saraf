@@ -1,1122 +1,1165 @@
 <!DOCTYPE html>
-<html lang="ku">
+<html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستەمی مدیریتی حەوالە و قەرز</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>سیستەمی غیابات - پەیمانگای سۆران</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4e73df;
-            --secondary-color: #1cc88a;
-            --danger-color: #e74a3b;
-            --warning-color: #f6c23e;
-            --info-color: #36b9cc;
-            --dark-color: #5a5c69;
-            --light-color: #f8f9fc;
+            --primary: #4e73df;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --secondary: #858796;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
         }
         
         body {
-            background-color: #f8f9fc;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fc;
+            color: #333;
         }
         
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100vh;
-            background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
-            z-index: 100;
-            transition: all 0.3s;
+            min-height: 100vh;
+            background: linear-gradient(180deg, var(--primary) 0%, #224abe 100%);
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
         }
         
-        .sidebar-brand {
-            height: 70px;
-            padding: 1.5rem 1rem;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .sidebar-nav {
-            padding-top: 1rem;
-        }
-        
-        .sidebar-item {
-            position: relative;
-            margin: 0 1rem;
-        }
-        
-        .sidebar-link {
-            padding: 0.75rem 1rem;
+        .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            border-radius: 0.35rem;
-            transition: all 0.3s;
+            padding: 1rem;
+            font-weight: 500;
         }
         
-        .sidebar-link:hover {
+        .sidebar .nav-link:hover {
             color: #fff;
             background-color: rgba(255, 255, 255, 0.1);
         }
         
-        .sidebar-link i {
-            margin-right: 0.5rem;
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
         }
         
-        .content {
-            margin-left: 250px;
-            padding: 1.5rem;
+        .navbar {
+            background-color: #fff;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
         }
         
         .card {
             border: none;
             border-radius: 0.35rem;
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-            margin-bottom: 1.5rem;
         }
         
         .card-header {
             background-color: #f8f9fc;
             border-bottom: 1px solid #e3e6f0;
-            padding: 0.75rem 1.25rem;
             font-weight: 700;
         }
         
-        .dashboard-card {
-            border-left: 4px solid;
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
         }
         
-        .dashboard-card-income {
-            border-left-color: var(--secondary-color);
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
         }
         
-        .dashboard-card-expense {
-            border-left-color: var(--primary-color);
+        .btn-primary:hover {
+            background-color: #3a5ccc;
+            border-color: #3a5ccc;
         }
         
-        .dashboard-card-debt {
-            border-left-color: var(--danger-color);
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            display: none;
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+            background: white;
         }
         
-        .dashboard-card-deposit {
-            border-left-color: var(--warning-color);
+        .search-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-item:hover {
+            background-color: #f8f9fa;
         }
         
         .section {
             display: none;
         }
         
-        .active-section {
+        .section.active {
             display: block;
         }
         
-        .search-suggestions {
-            position: absolute;
-            background: white;
-            width: 100%;
-            max-height: 200px;
+        .attendance-list {
+            max-height: 500px;
             overflow-y: auto;
-            z-index: 1000;
-            border: 1px solid #ddd;
-            border-radius: 0 0 4px 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .suggestion-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
+        .student-card {
+            transition: all 0.3s;
         }
         
-        .suggestion-item:hover {
-            background-color: #f5f5f5;
+        .student-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
         
-        .table-responsive {
-            overflow-x: auto;
+        .present {
+            border-left: 4px solid var(--success);
         }
         
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+        .absent {
+            border-left: 4px solid var(--danger);
         }
         
-        .btn-success {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger-color);
-            border-color: var(--danger-color);
-        }
-        
-        .btn-warning {
-            background-color: var(--warning-color);
-            border-color: var(--warning-color);
-        }
-        
-        .text-primary {
-            color: var(--primary-color) !important;
-        }
-        
-        .text-success {
-            color: var(--secondary-color) !important;
-        }
-        
-        .text-danger {
-            color: var(--danger-color) !important;
-        }
-        
-        .text-warning {
-            color: var(--warning-color) !important;
-        }
-        
-        .bg-primary {
-            background-color: var(--primary-color) !important;
-        }
-        
-        .bg-success {
-            background-color: var(--secondary-color) !important;
-        }
-        
-        .bg-danger {
-            background-color: var(--danger-color) !important;
-        }
-        
-        .bg-warning {
-            background-color: var(--warning-color) !important;
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 80px;
-            }
-            
-            .sidebar-brand span {
-                display: none;
-            }
-            
-            .sidebar-link span {
-                display: none;
-            }
-            
-            .content {
-                margin-left: 80px;
-            }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
         }
     </style>
 </head>
 <body>
-    <!-- ناوەڕۆکی سیستەمەکە -->
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-exchange-alt"></i> <span>سیستەمی حەوالە</span>
+    <!-- پەڕەی چوونەژوورەوە -->
+    <div id="loginPage" class="container">
+        <div class="login-container">
+            <h2 class="text-center mb-4">چوونەژوورەوە بۆ سیستەمی غیابات</h2>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">ناوی بەکارهێنەر</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">پاسوۆرد</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">چوونەژوورەوە</button>
+            </form>
         </div>
-        
-        <ul class="sidebar-nav">
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> <span>داشبۆرد</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="transfer">
-                    <i class="fas fa-paper-plane"></i> <span>حەوالەکردن</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="received">
-                    <i class="fas fa-hand-holding-usd"></i> <span>حەوالەکراو</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="schools">
-                    <i class="fas fa-school"></i> <span>مەکتەبەکان</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="persons">
-                    <i class="fas fa-users"></i> <span>کەسەکان</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="deposit">
-                    <i class="fas fa-money-check"></i> <span>پارەی واسل</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link" data-section="settings">
-                    <i class="fas fa-cog"></i> <span>رێکخستن</span>
-                </a>
-            </li>
-        </ul>
     </div>
-    
-    <div class="content">
-        <!-- داشبۆرد -->
-        <div id="dashboard" class="section active-section">
-            <h2 class="mb-4">داشبۆرد</h2>
-            
+
+    <!-- پەڕەی سەرەکی -->
+    <div id="mainPage" style="display: none;">
+        <!-- ناوەڕۆکی سەرەوە -->
+        <nav class="navbar navbar-expand navbar-light">
+            <div class="container-fluid">
+                <button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-user-tie me-2"></i>
+                    سیستەمی غیابات - پەیمانگای سۆران
+                </a>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle fa-fw"></i>
+                            <span id="userName">مامۆستا</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="showSection('settingsSection')"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i> ڕێکخستن</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i> دەرچوون</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card dashboard-card-expense h-100">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">کۆی پارەی حەوالەکراو</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">٠ دینار</div>
+                <!-- لیستەی تەنیشت -->
+                <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse" id="sidebarMenu">
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#" onclick="showSection('attendanceSection')">
+                                    <i class="fas fa-clipboard-list me-2"></i>
+                                    غیابات
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" onclick="showSection('studentsSection')">
+                                    <i class="fas fa-users me-2"></i>
+                                    قوتابیان
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" onclick="showSection('settingsSection')">
+                                    <i class="fas fa-cogs me-2"></i>
+                                    ڕێکخستن
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ناوەڕۆکی سەرەکی -->
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                    <!-- بەشی غیابات -->
+                    <div id="attendanceSection" class="section active">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">سیستەمی غیابات</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group me-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="todayBtn">ئەمڕۆ</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="datePickerBtn">بەرواری دیاریکراو</button>
                                 </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        هەڵبژاردنی بەروار
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="attendanceDate" class="form-label">بەرواری غیابات</label>
+                                            <input type="date" class="form-control" id="attendanceDate" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="attendanceCourse" class="form-label">ناوی وانە</label>
+                                            <input type="text" class="form-control" id="attendanceCourse" placeholder="ناوی وانە بنووسە..." required>
+                                        </div>
+                                        <button class="btn btn-primary" id="loadStudentsBtn">بارکردنی قوتابیان</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        زانیاری ئەمڕۆ
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <h4 id="presentCount">0</h4>
+                                                <p class="text-success">حەضر</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <h4 id="absentCount">0</h4>
+                                                <p class="text-danger">غیاب</p>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid gap-2 mt-3">
+                                            <button class="btn btn-success" id="saveAttendanceBtn">پاشەکەوتکردنی غیابات</button>
+                                            <button class="btn btn-info" id="exportAttendanceBtn">هەناردنی ڕاپۆرت</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>لیستی قوتابیان</span>
+                                <div>
+                                    <button class="btn btn-sm btn-success me-1" id="markAllPresentBtn">نیشانەکردنی هەموو حەضر</button>
+                                    <button class="btn btn-sm btn-danger" id="markAllAbsentBtn">نیشانەکردنی هەموو غیاب</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="studentsAttendanceList">
+                                    <!-- لیستی قوتابیان لێرە زیاد دەکرێت -->
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card dashboard-card-income h-100">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">کۆی پارەی وەرگیراو</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">٠ دینار</div>
+                    
+                    <!-- بەشی قوتابیان -->
+                    <div id="studentsSection" class="section">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">بەشی قوتابیان</h1>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                گەڕان بەدوای قوتابی
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6 position-relative">
+                                        <label for="studentSearch" class="form-label">ناوی قوتابی</label>
+                                        <input type="text" class="form-control" id="studentSearch" placeholder="ناوی قوتابی بنووسە...">
+                                        <div id="studentSearchResults" class="search-results"></div>
+                                    </div>
                                 </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-hand-holding-usd fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                زیادکردنی قوتابی
+                            </div>
+                            <div class="card-body">
+                                <form id="addStudentForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="studentName" class="form-label">ناوی قوتابی</label>
+                                            <input type="text" class="form-control" id="studentName" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="fatherName" class="form-label">ناوی باوکی</label>
+                                            <input type="text" class="form-control" id="fatherName" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="grandfatherName" class="form-label">ناوی باپیری</label>
+                                            <input type="text" class="form-control" id="grandfatherName" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="studentPhone" class="form-label">ژمارەی مۆبایلی قوتابی</label>
+                                            <input type="tel" class="form-control" id="studentPhone">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="studentGroup" class="form-label">جۆری گروپ</label>
+                                            <select class="form-select" id="studentGroup" required>
+                                                <option value="">هەڵبژێرە</option>
+                                                <option value="A">گروپ A</option>
+                                                <option value="B">گروپ B</option>
+                                                <option value="C">گروپ C</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="studentLevel" class="form-label">قۆناغ</label>
+                                            <select class="form-select" id="studentLevel" required>
+                                                <option value="">هەڵبژێرە</option>
+                                                <option value="1">قۆناغی 1</option>
+                                                <option value="2">قۆناغی 2</option>
+                                                <option value="3">قۆناغی 3</option>
+                                                <option value="4">قۆناغی 4</option>
+                                                <option value="5">قۆناغی 5</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">زیادکردنی قوتابی</button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- لیستی قوتابیان -->
+                        <div class="card">
+                            <div class="card-header">
+                                لیستی هەموو قوتابیان
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ناو</th>
+                                                <th>ناوی باوک</th>
+                                                <th>ناوی باپیر</th>
+                                                <th>قۆناغ</th>
+                                                <th>گروپ</th>
+                                                <th>ژمارەی مۆبایل</th>
+                                                <th>کردارەکان</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="studentsList">
+                                            <!-- لیستی قوتابیان لێرە زیاد دەکرێت -->
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card dashboard-card-debt h-100">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">کۆی قەرزی کەسەکان</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">٠ دینار</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
+                    
+                    <!-- بەشی ڕێکخستن -->
+                    <div id="settingsSection" class="section">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">ڕێکخستن</h1>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card dashboard-card-deposit h-100">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">کۆی پارەی واسلی کەسەکان</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">٠ دینار</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-money-check fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">مێژووی حەوالەکان</div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="transferHistoryTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>ناوی کەس</th>
-                                            <th>ناوی مەکتەب</th>
-                                            <th>بڕی پارە</th>
-                                            <th>کات</th>
-                                            <th>جۆر</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="5" class="text-center">هیچ حەوالەیەک تۆمارنەکراوە</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- حەوالەکردن -->
-        <div id="transfer" class="section">
-            <h2 class="mb-4">حەوالەکردن</h2>
-            
-            <div class="card mb-4">
-                <div class="card-header">گەڕان بەدوای کەس یان مەکتەب</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="personSearch">گەڕان بەدوای ناوی کەسەکان</label>
-                                <div class="position-relative">
-                                    <input type="text" class="form-control" id="personSearch" placeholder="ناوی کەس بنووسە">
-                                    <div class="search-suggestions" id="personSuggestions" style="display: none;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="schoolSearch">گەڕان بەدوای ناوی مەکتەبە</label>
-                                <div class="position-relative">
-                                    <input type="text" class="form-control" id="schoolSearch" placeholder="ناوی مەکتەبە بنووسە">
-                                    <div class="search-suggestions" id="schoolSuggestions" style="display: none;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-header">زانیاری حەوالە</div>
-                <div class="card-body">
-                    <form id="transferForm">
+                        
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="selectedPerson">کەس</label>
-                                    <input type="text" class="form-control" id="selectedPerson" readonly>
+                            <div class="col-lg-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        گۆڕینی پاسوۆرد
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="changePasswordForm">
+                                            <div class="mb-3">
+                                                <label for="currentPassword" class="form-label">پاسوۆردی ئێستا</label>
+                                                <input type="password" class="form-control" id="currentPassword" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="newPassword" class="form-label">پاسوۆردی نوێ</label>
+                                                <input type="password" class="form-control" id="newPassword" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="confirmPassword" class="form-label">دووبارەکردنەوەی پاسوۆردی نوێ</label>
+                                                <input type="password" class="form-control" id="confirmPassword" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">گۆڕینی پاسوۆرد</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        بەکەپ کردن
+                                    </div>
+                                    <div class="card-body">
+                                        <p>بەکەپ کردن لە هەموو زانیاریەکانی سیستەم</p>
+                                        <button class="btn btn-primary" id="backupBtn">بەکەپ کردن</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="selectedSchool">مەکتەبە</label>
-                                    <input type="text" class="form-control" id="selectedSchool" readonly>
+                            
+                            <div class="col-lg-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        خوێندنەوەی بەکەپ
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="backupFile" class="form-label">فایلی بەکەپ</label>
+                                            <input type="file" class="form-control" id="backupFile" accept=".json">
+                                        </div>
+                                        <button class="btn btn-primary" id="restoreBtn">خوێندنەوەی بەکەپ</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header">
+                                        بارکردنی زانیاری لە سیستەمەکانی تر
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="importFile" class="form-label">فایلی سیستەمی تر</label>
+                                            <input type="file" class="form-control" id="importFile" accept=".json">
+                                        </div>
+                                        <button class="btn btn-primary" id="importBtn">بارکردنی زانیاری</button>
+                                        <p class="text-muted mt-2">ئەم ئامرازە ڕێگەت پێدەدا زانیاریەکانی قوتابیان و غیابات لە سیستەمەکانی تر باربکەیت.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="transferAmount">بڕی پارە</label>
-                            <input type="number" class="form-control" id="transferAmount" placeholder="بڕی پارە بنووسە">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="transferDate">بەروار</label>
-                            <input type="date" class="form-control" id="transferDate">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="transferNotes">تێبینی</label>
-                            <textarea class="form-control" id="transferNotes" rows="3"></textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">حەوالە بکە</button>
-                        <button type="button" class="btn btn-secondary" id="printTransfer">چاپکردن</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">مێژووی حەوالەکان</div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="transferHistoryTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ناوی کەس</th>
-                                    <th>ناوی مەکتەب</th>
-                                    <th>بڕی پارە</th>
-                                    <th>بەروار</th>
-                                    <th>کردارەکان</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="5" class="text-center">هیچ حەوالەیەک تۆمارنەکراوە</td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- حەوالەکراو -->
-        <div id="received" class="section">
-            <h2 class="mb-4">حەوالەکراو</h2>
-            
-            <div class="card mb-4">
-                <div class="card-header">گەڕان بەدوای مەکتەبە</div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <div class="position-relative">
-                            <input type="text" class="form-control" id="receivedSchoolSearch" placeholder="ناوی مەکتەبە بنووسە">
-                            <div class="search-suggestions" id="receivedSchoolSuggestions" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">مێژووی پارەی وەرگیراو</div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="receivedHistoryTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ناوی کەس</th>
-                                    <th>ناوی مەکتەب</th>
-                                    <th>بڕی پارە</th>
-                                    <th>بەروار</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="4" class="text-center">هیچ حەوالەیەک تۆمارنەکراوە</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- مەکتەبەکان -->
-        <div id="schools" class="section">
-            <h2 class="mb-4">مەکتەبەکان</h2>
-            
-            <div class="card mb-4">
-                <div class="card-header">گەڕان بەدوای مەکتەبە</div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <div class="position-relative">
-                            <input type="text" class="form-control" id="schoolListSearch" placeholder="ناوی مەکتەبە بنووسە">
-                            <div class="search-suggestions" id="schoolListSuggestions" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-header">زیادکردنی مەکتەبی نوێ</div>
-                <div class="card-body">
-                    <form id="addSchoolForm">
-                        <div class="form-group">
-                            <label for="schoolName">ناوی مەکتەبە</label>
-                            <input type="text" class="form-control" id="schoolName" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="schoolLocation">شوێنی مەکتەبە</label>
-                            <input type="text" class="form-control" id="schoolLocation" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="schoolPhone">ژمارە موبایلی مەکتەبە</label>
-                            <input type="tel" class="form-control" id="schoolPhone">
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">زیادکردن</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">لیستی مەکتەبەکان</div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="schoolsTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ناوی مەکتەبە</th>
-                                    <th>شوێن</th>
-                                    <th>ژمارە موبایل</th>
-                                    <th>کردارەکان</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="4" class="text-center">هیچ مەکتەبێک تۆمارنەکراوە</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- کەسەکان -->
-        <div id="persons" class="section">
-            <h2 class="mb-4">کەسەکان</h2>
-            
-            <div class="card mb-4">
-                <div class="card-header">گەڕان بەدوای کەس</div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <div class="position-relative">
-                            <input type="text" class="form-control" id="personListSearch" placeholder="ناوی کەس بنووسە">
-                            <div class="search-suggestions" id="personListSuggestions" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-header">زیادکردنی کەسی نوێ</div>
-                <div class="card-body">
-                    <form id="addPersonForm">
-                        <div class="form-group">
-                            <label for="personName">ناوی کەسەکە</label>
-                            <input type="text" class="form-control" id="personName" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="partnerName">ناوی شەریکەکە (ئارەزوومەندانە)</label>
-                            <input type="text" class="form-control" id="partnerName">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="personPhone">ژمارە موبایلی کەسەکە</label>
-                            <input type="tel" class="form-control" id="personPhone">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="personLocation">شوێنی کەسەکە</label>
-                            <input type="text" class="form-control" id="personLocation">
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">زیادکردن</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">لیستی کەسەکان</div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="personsTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ناوی کەس</th>
-                                    <th>ناوی شەریک</th>
-                                    <th>ژمارە موبایل</th>
-                                    <th>شوێن</th>
-                                    <th>قەرز</th>
-                                    <th>کردارەکان</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="6" class="text-center">هیچ کەسێک تۆمارنەکراوە</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- پارەی واسل -->
-        <div id="deposit" class="section">
-            <h2 class="mb-4">پارەی واسلکردنی کەسەکان</h2>
-            
-            <div class="card mb-4">
-                <div class="card-header">گەڕان بەدوای کەس</div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <div class="position-relative">
-                            <input type="text" class="form-control" id="depositPersonSearch" placeholder="ناوی کەس بنووسە">
-                            <div class="search-suggestions" id="depositPersonSuggestions" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-header">پارەی واسل</div>
-                <div class="card-body">
-                    <form id="depositForm">
-                        <div class="form-group">
-                            <label for="selectedDepositPerson">کەس</label>
-                            <input type="text" class="form-control" id="selectedDepositPerson" readonly>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="depositAmount">بڕی پارە</label>
-                            <input type="number" class="form-control" id="depositAmount" placeholder="بڕی پارە بنووسە">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="depositDate">بەروار</label>
-                            <input type="date" class="form-control" id="depositDate">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="depositNotes">تێبینی</label>
-                            <textarea class="form-control" id="depositNotes" rows="3"></textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">پارە واسل بکە</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">مێژووی پارەی واسل</div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="depositHistoryTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ناوی کەس</th>
-                                    <th>بڕی پارە</th>
-                                    <th>بەروار</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="3" class="text-center">هیچ پارەیەک واسل نەکراوە</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- رێکخستن -->
-        <div id="settings" class="section">
-            <h2 class="mb-4">رێکخستن</h2>
-            
-            <div class="card mb-4">
-                <div class="card-header">باکەپ</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>داتا هەلگرە</label>
-                                <button class="btn btn-primary btn-block" id="backupBtn">باکەپی داتاکان وەرگرە</button>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>داتا هێنەرەوە</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="restoreFile">
-                                    <label class="custom-file-label" for="restoreFile">فایلێک هەڵبژێرە</label>
-                                </div>
-                                <button class="btn btn-success btn-block mt-2" id="restoreBtn">داتا هێنەرەوە</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">زانیاری سیستەم</div>
-                <div class="card-body">
-                    <p>ئەم سیستەمە بۆ بەڕێوەبردنی حەوالە و قەرز دروست کراوە.</p>
-                    <p>هەموو داتاکان لە ناو وێبگەڕەکەتدا خەزن دەکرێن و دەتوانیت باکەپیان وەربگریت.</p>
-                </div>
+                </main>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // داتاکانی سیستەم
-            let data = {
-                persons: [],
-                schools: [],
-                transfers: [],
-                deposits: []
+        // زانیاریەکانی سیستەم
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let attendance = JSON.parse(localStorage.getItem('attendance')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        let editingStudentId = null;
+        
+        // پاسوۆردی سەرەکی
+        const systemPassword = "teacher123";
+        const systemUsername = "teacher";
+        
+        // چێککردنی چوونەژوورەوە
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUser) {
+                showMainPage();
+                displayStudentsList();
+                setupTodayDate();
+            } else {
+                showLoginPage();
+            }
+            
+            // زیادکردنی Event Listeners
+            setupEventListeners();
+        });
+        
+        // نیشاندانی پەڕەی چوونەژوورەوە
+        function showLoginPage() {
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('mainPage').style.display = 'none';
+        }
+        
+        // نیشاندانی پەڕەی سەرەکی
+        function showMainPage() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            showSection('attendanceSection');
+        }
+        
+        // چوونەژوورەوە
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === systemUsername && password === systemPassword) {
+                currentUser = { username: username };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                document.getElementById('userName').textContent = username;
+                showMainPage();
+                displayStudentsList();
+            } else {
+                alert('ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە!');
+            }
+        });
+        
+        // دەرچوون
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            showLoginPage();
+        }
+        
+        // نیشاندانی بەشێک
+        function showSection(sectionId) {
+            // لێکردنەوەی هەموو بەشەکان
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // چالاککردنی بەشی دیاریکراو
+            document.getElementById(sectionId).classList.add('active');
+            
+            // چالاککردنی لیستەی تەنیشت
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // دیاریکردنی لیستەی چالاک
+            let activeLink = null;
+            switch(sectionId) {
+                case 'attendanceSection':
+                    activeLink = document.querySelector('a[href="#"][onclick="showSection(\'attendanceSection\')"]');
+                    break;
+                case 'studentsSection':
+                    activeLink = document.querySelector('a[href="#"][onclick="showSection(\'studentsSection\')"]');
+                    displayStudentsList();
+                    break;
+                case 'settingsSection':
+                    activeLink = document.querySelector('a[href="#"][onclick="showSection(\'settingsSection\')"]');
+                    break;
+            }
+            
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+        
+        // زیادکردنی Event Listeners
+        function setupEventListeners() {
+            // زیادکردنی قوتابی
+            document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (editingStudentId) {
+                    updateStudent(editingStudentId);
+                } else {
+                    addStudent();
+                }
+            });
+            
+            // گۆڕینی پاسوۆرد
+            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                changePassword();
+            });
+            
+            // بەکەپ کردن
+            document.getElementById('backupBtn').addEventListener('click', backupData);
+            
+            // خوێندنەوەی بەکەپ
+            document.getElementById('restoreBtn').addEventListener('click', restoreData);
+            
+            // بارکردنی زانیاری لە سیستەمەکانی تر
+            document.getElementById('importBtn').addEventListener('click', importData);
+            
+            // گەڕان بەدوای قوتابی
+            setupStudentSearch();
+            
+            // بەرواری ئەمڕۆ
+            document.getElementById('todayBtn').addEventListener('click', setupTodayDate);
+            
+            // بارکردنی قوتابیان بۆ غیابات
+            document.getElementById('loadStudentsBtn').addEventListener('click', loadStudentsForAttendance);
+            
+            // پاشەکەوتکردنی غیابات
+            document.getElementById('saveAttendanceBtn').addEventListener('click', saveAttendance);
+            
+            // نیشانەکردنی هەموو حەضر
+            document.getElementById('markAllPresentBtn').addEventListener('click', markAllPresent);
+            
+            // نیشانەکردنی هەموو غیاب
+            document.getElementById('markAllAbsentBtn').addEventListener('click', markAllAbsent);
+            
+            // هەناردنی ڕاپۆرت
+            document.getElementById('exportAttendanceBtn').addEventListener('click', exportAttendanceReport);
+        }
+        
+        // ڕێکخستنی بەرواری ئەمڕۆ
+        function setupTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('attendanceDate').value = today;
+        }
+        
+        // فەنکشنی نوێ بۆ نیشاندانی لیستی قوتابیان
+        function displayStudentsList() {
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = '';
+
+            if (students.length === 0) {
+                studentsList.innerHTML = '<tr><td colspan="7" class="text-center">هیچ قوتابیەک تۆمار نەکراوە</td></tr>';
+                return;
+            }
+
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.fatherName}</td>
+                    <td>${student.grandfatherName}</td>
+                    <td>قۆناغی ${student.level}</td>
+                    <td>${student.group}</td>
+                    <td>${student.phone || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-1" onclick="editStudent('${student.id}')">
+                            <i class="fas fa-edit"></i> گۆڕانکاری
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteStudent('${student.id}')">
+                            <i class="fas fa-trash"></i> سڕینەوە
+                        </button>
+                    </td>
+                `;
+                studentsList.appendChild(row);
+            });
+        }
+
+        // فەنکشنی گۆڕانکاری قوتابی
+        function editStudent(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+
+            // پڕکردنەوەی فۆرم بە زانیاری قوتابی
+            document.getElementById('studentName').value = student.name;
+            document.getElementById('fatherName').value = student.fatherName;
+            document.getElementById('grandfatherName').value = student.grandfatherName;
+            document.getElementById('studentPhone').value = student.phone || '';
+            document.getElementById('studentGroup').value = student.group;
+            document.getElementById('studentLevel').value = student.level;
+
+            // گۆڕینی دەقەی دووگمەی زیادکردن
+            const submitBtn = document.querySelector('#addStudentForm button[type="submit"]');
+            submitBtn.textContent = 'نوێکردنەوەی قوتابی';
+            editingStudentId = studentId;
+        }
+
+        // فەنکشنی نوێکردنەوەی قوتابی
+        function updateStudent(studentId) {
+            const studentIndex = students.findIndex(s => s.id === studentId);
+            if (studentIndex === -1) return;
+
+            students[studentIndex] = {
+                ...students[studentIndex],
+                name: document.getElementById('studentName').value,
+                fatherName: document.getElementById('fatherName').value,
+                grandfatherName: document.getElementById('grandfatherName').value,
+                phone: document.getElementById('studentPhone').value,
+                group: document.getElementById('studentGroup').value,
+                level: document.getElementById('studentLevel').value
+            };
+
+            saveStudentsAndRefresh();
+        }
+
+        // فەنکشنی سڕینەوەی قوتابی
+        function deleteStudent(studentId) {
+            if (!confirm('دڵنیایت دەتەوێت ئەم قوتابیە بسڕیتەوە؟')) {
+                return;
+            }
+
+            // سڕینەوەی قوتابی
+            students = students.filter(s => s.id !== studentId);
+            
+            // سڕینەوەی هەموو غیابەکانی قوتابی
+            attendance = attendance.filter(a => a.studentId !== studentId);
+
+            saveStudentsAndRefresh();
+            alert('قوتابی بە سەرکەوتوویی سڕدرایەوە!');
+        }
+
+        // فەنکشنی پاشەکەوتکردن و نوێکردنەوە
+        function saveStudentsAndRefresh() {
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('attendance', JSON.stringify(attendance));
+            
+            displayStudentsList();
+            
+            // ڕیسێتکردنی فۆرم
+            document.getElementById('addStudentForm').reset();
+            const submitBtn = document.querySelector('#addStudentForm button[type="submit"]');
+            submitBtn.textContent = 'زیادکردنی قوتابی';
+            editingStudentId = null;
+        }
+        
+        // زیادکردنی قوتابی
+        function addStudent() {
+            const student = {
+                id: Date.now().toString(),
+                name: document.getElementById('studentName').value,
+                fatherName: document.getElementById('fatherName').value,
+                grandfatherName: document.getElementById('grandfatherName').value,
+                phone: document.getElementById('studentPhone').value,
+                group: document.getElementById('studentGroup').value,
+                level: document.getElementById('studentLevel').value
             };
             
-            // چێکردنەوەی داتا لە localStorage
-            function loadData() {
-                const savedData = localStorage.getItem('hawalaSystemData');
-                if (savedData) {
-                    data = JSON.parse(savedData);
-                }
-                updateAllTables();
-                updateDashboard();
+            students.push(student);
+            localStorage.setItem('students', JSON.stringify(students));
+            alert('قوتابی بە سەرکەوتوویی زیاد کرا!');
+            document.getElementById('addStudentForm').reset();
+            displayStudentsList();
+        }
+        
+        // گۆڕینی پاسوۆرد
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (currentPassword !== systemPassword) {
+                alert('پاسوۆردی ئێستا هەڵەیە!');
+                return;
             }
             
-            // پاشەکەوتکردنی داتا لە localStorage
-            function saveData() {
-                localStorage.setItem('hawalaSystemData', JSON.stringify(data));
-                updateAllTables();
-                updateDashboard();
+            if (newPassword !== confirmPassword) {
+                alert('پاسوۆردی نوێ و دووبارەکردنەوەی جیاوازن!');
+                return;
             }
             
-            // نوێکردنەوەی هەموو خشتەکان
-            function updateAllTables() {
-                updatePersonsTable();
-                updateSchoolsTable();
-                updateTransferHistoryTable();
-                updateReceivedHistoryTable();
-                updateDepositHistoryTable();
+            alert('پاسوۆرد بە سەرکەوتوویی گۆڕدرا!');
+            document.getElementById('changePasswordForm').reset();
+        }
+        
+        // بەکەپ کردن
+        function backupData() {
+            const data = {
+                students: students,
+                attendance: attendance,
+                backupDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `attendance_system_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            alert('بەکەپ بە سەرکەوتوویی دروست کرا!');
+        }
+        
+        // خوێندنەوەی بەکەپ
+        function restoreData() {
+            const fileInput = document.getElementById('backupFile');
+            if (fileInput.files.length === 0) {
+                alert('تکایە فایلی بەکەپ هەڵبژێرە!');
+                return;
             }
             
-            // نوێکردنەوەی داشبۆرد
-            function updateDashboard() {
-                // لێرەدا دەتوانیت ژمارەکان نوێ بکەیتەوە
-                console.log("داشبۆرد نوێکرایەوە");
-            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
             
-            // گۆڕینی ناوەڕۆک بە کلیک کردن لەسەر لیستەی ناوەڕاست
-            $('.sidebar-link').click(function(e) {
-                e.preventDefault();
-                const sectionId = $(this).data('section');
-                $('.section').removeClass('active-section');
-                $(`#${sectionId}`).addClass('active-section');
-            });
-            
-            // زیادکردنی کەسی نوێ
-            $('#addPersonForm').submit(function(e) {
-                e.preventDefault();
-                const person = {
-                    id: Date.now(),
-                    name: $('#personName').val(),
-                    partner: $('#partnerName').val(),
-                    phone: $('#personPhone').val(),
-                    location: $('#personLocation').val(),
-                    debt: 0
-                };
-                
-                data.persons.push(person);
-                saveData();
-                this.reset();
-                alert('کەسەکە بە سەرکەوتوویی زیادکرا');
-            });
-            
-            // زیادکردنی مەکتەبی نوێ
-            $('#addSchoolForm').submit(function(e) {
-                e.preventDefault();
-                const school = {
-                    id: Date.now(),
-                    name: $('#schoolName').val(),
-                    location: $('#schoolLocation').val(),
-                    phone: $('#schoolPhone').val()
-                };
-                
-                data.schools.push(school);
-                saveData();
-                this.reset();
-                alert('مەکتەبەکە بە سەرکەوتوویی زیادکرا');
-            });
-            
-            // حەوالەکردن
-            $('#transferForm').submit(function(e) {
-                e.preventDefault();
-                const transfer = {
-                    id: Date.now(),
-                    person: $('#selectedPerson').val(),
-                    school: $('#selectedSchool').val(),
-                    amount: parseInt($('#transferAmount').val()),
-                    date: $('#transferDate').val(),
-                    notes: $('#transferNotes').val(),
-                    type: 'sent'
-                };
-                
-                data.transfers.push(transfer);
-                
-                // زیادکردنی قەرز بۆ کەسەکە
-                const personName = $('#selectedPerson').val();
-                const person = data.persons.find(p => p.name === personName);
-                if (person) {
-                    person.debt += transfer.amount;
-                }
-                
-                saveData();
-                this.reset();
-                alert('حەوالەکە بە سەرکەوتوویی ئەنجامدرا');
-            });
-            
-            // پارەی واسل
-            $('#depositForm').submit(function(e) {
-                e.preventDefault();
-                const deposit = {
-                    id: Date.now(),
-                    person: $('#selectedDepositPerson').val(),
-                    amount: parseInt($('#depositAmount').val()),
-                    date: $('#depositDate').val(),
-                    notes: $('#depositNotes').val()
-                };
-                
-                data.deposits.push(deposit);
-                
-                // کەمکردنەوەی قەرزی کەسەکە
-                const personName = $('#selectedDepositPerson').val();
-                const person = data.persons.find(p => p.name === personName);
-                if (person) {
-                    person.debt -= deposit.amount;
-                    if (person.debt < 0) person.debt = 0;
-                }
-                
-                saveData();
-                this.reset();
-                alert('پارەکە بە سەرکەوتوویی واسلکرا');
-            });
-            
-            // نوێکردنەوەی خشتەی کەسەکان
-            function updatePersonsTable() {
-                const tbody = $('#personsTable tbody');
-                tbody.empty();
-                
-                if (data.persons.length === 0) {
-                    tbody.append('<tr><td colspan="6" class="text-center">هیچ کەسێک تۆمارنەکراوە</td></tr>');
-                    return;
-                }
-                
-                data.persons.forEach(person => {
-                    const row = `
-                        <tr>
-                            <td>${person.name}</td>
-                            <td>${person.partner || '-'}</td>
-                            <td>${person.phone || '-'}</td>
-                            <td>${person.location || '-'}</td>
-                            <td>${person.debt} دینار</td>
-                            <td>
-                                <button class="btn btn-sm btn-info view-person" data-id="${person.id}">بینین</button>
-                                <button class="btn btn-sm btn-danger delete-person" data-id="${person.id}">سڕینەوە</button>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-            }
-            
-            // نوێکردنەوەی خشتەی مەکتەبەکان
-            function updateSchoolsTable() {
-                const tbody = $('#schoolsTable tbody');
-                tbody.empty();
-                
-                if (data.schools.length === 0) {
-                    tbody.append('<tr><td colspan="4" class="text-center">هیچ مەکتەبێک تۆمارنەکراوە</td></tr>');
-                    return;
-                }
-                
-                data.schools.forEach(school => {
-                    const row = `
-                        <tr>
-                            <td>${school.name}</td>
-                            <td>${school.location}</td>
-                            <td>${school.phone || '-'}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info view-school" data-id="${school.id}">بینین</button>
-                                <button class="btn btn-sm btn-danger delete-school" data-id="${school.id}">سڕینەوە</button>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-            }
-            
-            // نوێکردنەوەی خشتەی مێژووی حەوالەکان
-            function updateTransferHistoryTable() {
-                const tbody = $('#transferHistoryTable tbody');
-                tbody.empty();
-                
-                const sentTransfers = data.transfers.filter(t => t.type === 'sent');
-                
-                if (sentTransfers.length === 0) {
-                    tbody.append('<tr><td colspan="5" class="text-center">هیچ حەوالەیەک تۆمارنەکراوە</td></tr>');
-                    return;
-                }
-                
-                sentTransfers.forEach(transfer => {
-                    const row = `
-                        <tr>
-                            <td>${transfer.person}</td>
-                            <td>${transfer.school}</td>
-                            <td>${transfer.amount} دینار</td>
-                            <td>${transfer.date}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info view-transfer" data-id="${transfer.id}">بینین</button>
-                                <button class="btn btn-sm btn-danger delete-transfer" data-id="${transfer.id}">سڕینەوە</button>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-            }
-            
-            // نوێکردنەوەی خشتەی مێژووی وەرگرتن
-            function updateReceivedHistoryTable() {
-                const tbody = $('#receivedHistoryTable tbody');
-                tbody.empty();
-                
-                const receivedTransfers = data.transfers.filter(t => t.type === 'received');
-                
-                if (receivedTransfers.length === 0) {
-                    tbody.append('<tr><td colspan="4" class="text-center">هیچ حەوالەیەک تۆمارنەکراوە</td></tr>');
-                    return;
-                }
-                
-                receivedTransfers.forEach(transfer => {
-                    const row = `
-                        <tr>
-                            <td>${transfer.person}</td>
-                            <td>${transfer.school}</td>
-                            <td>${transfer.amount} دینار</td>
-                            <td>${transfer.date}</td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-            }
-            
-            // نوێکردنەوەی خشتەی مێژووی پارەی واسل
-            function updateDepositHistoryTable() {
-                const tbody = $('#depositHistoryTable tbody');
-                tbody.empty();
-                
-                if (data.deposits.length === 0) {
-                    tbody.append('<tr><td colspan="3" class="text-center">هیچ پارەیەک واسل نەکراوە</td></tr>');
-                    return;
-                }
-                
-                data.deposits.forEach(deposit => {
-                    const row = `
-                        <tr>
-                            <td>${deposit.person}</td>
-                            <td>${deposit.amount} دینار</td>
-                            <td>${deposit.date}</td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-            }
-            
-            // گەڕان بەدوای کەسەکان
-            $('#personSearch, #personListSearch, #depositPersonSearch').on('input', function() {
-                const searchTerm = $(this).val().toLowerCase();
-                const suggestions = data.persons.filter(person => 
-                    person.name.toLowerCase().includes(searchTerm)
-                );
-                
-                const suggestionsId = $(this).attr('id') + 'Suggestions';
-                const $suggestions = $('#' + suggestionsId);
-                
-                if (searchTerm.length === 0 || suggestions.length === 0) {
-                    $suggestions.hide();
-                    return;
-                }
-                
-                $suggestions.empty();
-                suggestions.forEach(person => {
-                    $suggestions.append(`<div class="suggestion-item" data-name="${person.name}">${person.name}</div>`);
-                });
-                
-                $suggestions.show();
-            });
-            
-            // گەڕان بەدوای مەکتەبەکان
-            $('#schoolSearch, #receivedSchoolSearch, #schoolListSearch').on('input', function() {
-                const searchTerm = $(this).val().toLowerCase();
-                const suggestions = data.schools.filter(school => 
-                    school.name.toLowerCase().includes(searchTerm)
-                );
-                
-                const suggestionsId = $(this).attr('id') + 'Suggestions';
-                const $suggestions = $('#' + suggestionsId);
-                
-                if (searchTerm.length === 0 || suggestions.length === 0) {
-                    $suggestions.hide();
-                    return;
-                }
-                
-                $suggestions.empty();
-                suggestions.forEach(school => {
-                    $suggestions.append(`<div class="suggestion-item" data-name="${school.name}">${school.name}</div>`);
-                });
-                
-                $suggestions.show();
-            });
-            
-            // هەڵبژاردنی پێشنیار
-            $(document).on('click', '.suggestion-item', function() {
-                const name = $(this).data('name');
-                const inputId = $(this).parent().attr('id').replace('Suggestions', '');
-                $('#' + inputId).val(name);
-                $(this).parent().hide();
-                
-                // بۆ حەوالەکردن
-                if (inputId === 'personSearch') {
-                    $('#selectedPerson').val(name);
-                } else if (inputId === 'schoolSearch') {
-                    $('#selectedSchool').val(name);
-                } else if (inputId === 'depositPersonSearch') {
-                    $('#selectedDepositPerson').val(name);
-                }
-            });
-            
-            // باکەپ
-            $('#backupBtn').click(function() {
-                const dataStr = JSON.stringify(data);
-                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                
-                const exportFileDefaultName = 'hawala-backup.json';
-                
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-            });
-            
-            // هێنانەوەی داتا
-            $('#restoreBtn').click(function() {
-                const fileInput = $('#restoreFile')[0];
-                if (fileInput.files.length === 0) {
-                    alert('تکایە فایلێک هەڵبژێرە');
-                    return;
-                }
-                
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const restoredData = JSON.parse(e.target.result);
-                        data = restoredData;
-                        saveData();
-                        alert('داتاکان بە سەرکەوتوویی هێنرانەوە');
-                    } catch (error) {
-                        alert('هەڵە لە خوێندنەوەی فایلەکە: ' + error.message);
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // زیادکردنی زانیاریە نوێیەکان بە شێوەیەکی جیاواز
+                    if (data.students) {
+                        // تەنها قوتابیە نوێیەکان زیاد دەکەین
+                        data.students.forEach(newStudent => {
+                            if (!students.find(s => s.id === newStudent.id)) {
+                                students.push(newStudent);
+                            }
+                        });
                     }
-                };
-                
-                reader.readAsText(file);
+                    
+                    if (data.attendance) {
+                        // تەنها غیابە نوێیەکان زیاد دەکەین
+                        data.attendance.forEach(newAttendance => {
+                            if (!attendance.find(a => a.id === newAttendance.id)) {
+                                attendance.push(newAttendance);
+                            }
+                        });
+                    }
+                    
+                    localStorage.setItem('students', JSON.stringify(students));
+                    localStorage.setItem('attendance', JSON.stringify(attendance));
+                    
+                    alert('بەکەپ بە سەرکەوتوویی خوێندرایەوە!');
+                    displayStudentsList();
+                } catch (error) {
+                    alert('هەڵە لە خوێندنەوەی فایلی بەکەپ: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // بارکردنی زانیاری لە سیستەمەکانی تر
+        function importData() {
+            const fileInput = document.getElementById('importFile');
+            if (fileInput.files.length === 0) {
+                alert('تکایە فایلی سیستەمی تر هەڵبژێرە!');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let importedCount = 0;
+                    
+                    // زیادکردنی قوتابیان
+                    if (data.students) {
+                        data.students.forEach(newStudent => {
+                            if (!students.find(s => s.id === newStudent.id)) {
+                                students.push(newStudent);
+                                importedCount++;
+                            }
+                        });
+                    }
+                    
+                    // زیادکردنی غیابات
+                    if (data.attendance) {
+                        data.attendance.forEach(newAttendance => {
+                            if (!attendance.find(a => a.id === newAttendance.id)) {
+                                attendance.push(newAttendance);
+                            }
+                        });
+                    }
+                    
+                    localStorage.setItem('students', JSON.stringify(students));
+                    localStorage.setItem('attendance', JSON.stringify(attendance));
+                    
+                    alert(`${importedCount} قوتابی بە سەرکەوتوویی بارکران!`);
+                    displayStudentsList();
+                } catch (error) {
+                    alert('هەڵە لە خوێندنەوەی فایل: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // ڕێکخستنی گەڕان بەدوای قوتابی
+        function setupStudentSearch() {
+            // گەڕان لە بەشی قوتابیان
+            document.getElementById('studentSearch').addEventListener('input', function() {
+                searchStudents(this.value, 'studentSearchResults', function(student) {
+                    // هیچ کردارێک لێنینەدەکرێت، تەنها پێشنیار
+                });
+            });
+        }
+        
+        // گەڕان بەدوای قوتابی
+        function searchStudents(query, resultsContainerId, onSelect) {
+            const resultsContainer = document.getElementById(resultsContainerId);
+            
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            const filteredStudents = students.filter(student => 
+                student.name.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if (filteredStudents.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-item">هیچ قوتابیەک نەدۆزرایەوە</div>';
+                resultsContainer.style.display = 'block';
+                return;
+            }
+            
+            resultsContainer.innerHTML = '';
+            filteredStudents.forEach(student => {
+                const item = document.createElement('div');
+                item.className = 'search-item';
+                item.textContent = student.name;
+                item.addEventListener('click', function() {
+                    onSelect(student);
+                });
+                resultsContainer.appendChild(item);
             });
             
-            // دەستپێکردنی سیستەم
-            loadData();
+            resultsContainer.style.display = 'block';
+        }
+        
+        // بارکردنی قوتابیان بۆ غیابات
+        function loadStudentsForAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            const course = document.getElementById('attendanceCourse').value;
+            
+            if (!date || !course) {
+                alert('تکایە بەروار و ناوی وانە پڕبکەرەوە!');
+                return;
+            }
+            
+            const studentsList = document.getElementById('studentsAttendanceList');
+            studentsList.innerHTML = '';
+            
+            if (students.length === 0) {
+                studentsList.innerHTML = '<div class="col-12 text-center"><p>هیچ قوتابیەک تۆمار نەکراوە</p></div>';
+                updateAttendanceCount();
+                return;
+            }
+            
+            students.forEach(student => {
+                // پشکنین بۆ دۆزینەوەی غیابەکانی پێشوو بۆ ئەم بەروارە و وانەیە
+                const existingAttendance = attendance.find(a => 
+                    a.studentId === student.id && 
+                    a.date === date && 
+                    a.course === course
+                );
+                
+                const isPresent = existingAttendance ? existingAttendance.present : true;
+                
+                const studentCard = document.createElement('div');
+                studentCard.className = `col-md-6 col-lg-4 mb-3 student-card ${isPresent ? 'present' : 'absent'}`;
+                studentCard.innerHTML = `
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${student.name}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">باوک: ${student.fatherName}</small><br>
+                                <small class="text-muted">قۆناغ: ${student.level} | گروپ: ${student.group}</small>
+                            </p>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="attendance-${student.id}" id="present-${student.id}" autocomplete="off" ${isPresent ? 'checked' : ''}>
+                                <label class="btn btn-outline-success" for="present-${student.id}">حەضر</label>
+                                
+                                <input type="radio" class="btn-check" name="attendance-${student.id}" id="absent-${student.id}" autocomplete="off" ${!isPresent ? 'checked' : ''}>
+                                <label class="btn btn-outline-danger" for="absent-${student.id}">غیاب</label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                studentsList.appendChild(studentCard);
+            });
+            
+            updateAttendanceCount();
+        }
+        
+        // نوێکردنەوەی ژمارەی حەضر و غیاب
+        function updateAttendanceCount() {
+            const presentCount = document.querySelectorAll('input[type="radio"]:checked.btn-check').length;
+            const absentCount = students.length - presentCount;
+            
+            document.getElementById('presentCount').textContent = presentCount;
+            document.getElementById('absentCount').textContent = absentCount;
+        }
+        
+        // پاشەکەوتکردنی غیابات
+        function saveAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            const course = document.getElementById('attendanceCourse').value;
+            
+            if (!date || !course) {
+                alert('تکایە بەروار و ناوی وانە پڕبکەرەوە!');
+                return;
+            }
+            
+            // سڕینەوەی هەموو غیابەکانی پێشوو بۆ ئەم بەروارە و وانەیە
+            attendance = attendance.filter(a => !(a.date === date && a.course === course));
+            
+            // زیادکردنی غیابە نوێیەکان
+            students.forEach(student => {
+                const isPresent = document.getElementById(`present-${student.id}`).checked;
+                
+                const attendanceRecord = {
+                    id: `${student.id}-${date}-${course}`,
+                    studentId: student.id,
+                    studentName: student.name,
+                    date: date,
+                    course: course,
+                    present: isPresent
+                };
+                
+                attendance.push(attendanceRecord);
+            });
+            
+            localStorage.setItem('attendance', JSON.stringify(attendance));
+            alert('غیابات بە سەرکەوتوویی پاشەکەوت کرا!');
+        }
+        
+        // نیشانەکردنی هەموو حەضر
+        function markAllPresent() {
+            students.forEach(student => {
+                const presentRadio = document.getElementById(`present-${student.id}`);
+                if (presentRadio) {
+                    presentRadio.checked = true;
+                }
+            });
+            updateAttendanceCount();
+        }
+        
+        // نیشانەکردنی هەموو غیاب
+        function markAllAbsent() {
+            students.forEach(student => {
+                const absentRadio = document.getElementById(`absent-${student.id}`);
+                if (absentRadio) {
+                    absentRadio.checked = true;
+                }
+            });
+            updateAttendanceCount();
+        }
+        
+        // هەناردنی ڕاپۆرتی غیابات
+        function exportAttendanceReport() {
+            const date = document.getElementById('attendanceDate').value;
+            const course = document.getElementById('attendanceCourse').value;
+            
+            if (!date || !course) {
+                alert('تکایە بەروار و ناوی وانە پڕبکەرەوە!');
+                return;
+            }
+            
+            const todayAttendance = attendance.filter(a => a.date === date && a.course === course);
+            
+            if (todayAttendance.length === 0) {
+                alert('هیچ زانیاریەکی غیابات بۆ ئەم بەروارە نییە!');
+                return;
+            }
+            
+            let presentCount = 0;
+            let absentCount = 0;
+            
+            let reportContent = `
+                <h2 style="text-align: center; color: #4e73df;">ڕاپۆرتی غیابات</h2>
+                <h3 style="text-align: center;">${course}</h3>
+                <p style="text-align: center;"><strong>بەروار:</strong> ${date}</p>
+                <hr>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #4e73df; color: white;">
+                            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">ناوی قوتابی</th>
+                            <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">ناوی باوک</th>
+                            <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">قۆناغ</th>
+                            <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">گروپ</th>
+                            <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">دۆخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            todayAttendance.forEach(record => {
+                const student = students.find(s => s.id === record.studentId);
+                if (student) {
+                    if (record.present) presentCount++;
+                    else absentCount++;
+                    
+                    reportContent += `
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${student.name}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${student.fatherName}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${student.level}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${student.group}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${record.present ? 'green' : 'red'}">${record.present ? 'حەضر' : 'غیاب'}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            reportContent += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px; padding: 10px; background-color: #f8f9fc; border-radius: 5px;">
+                    <p style="text-align: center;"><strong>کۆی قوتابیان:</strong> ${todayAttendance.length}</p>
+                    <p style="text-align: center;"><strong>ژمارەی حەضر:</strong> ${presentCount}</p>
+                    <p style="text-align: center;"><strong>ژمارەی غیاب:</strong> ${absentCount}</p>
+                </div>
+                <div style="margin-top: 20px; text-align: left;">
+                    <p><strong>بەرواری هەناردن:</strong> ${new Date().toLocaleDateString('ar-KU')}</p>
+                </div>
+            `;
+            
+            // دروستکردنی پەڕە و چاپکردن
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html dir="rtl">
+                <head>
+                    <title>ڕاپۆرتی غیابات</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+                        th { background-color: #f2f2f2; }
+                        @media print {
+                            body { margin: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${reportContent}
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+        
+        // تەوگڵی تەنیشت
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebarMenu').classList.toggle('collapse');
+        });
+        
+        // نوێکردنەوەی ژمارەی حەضر و غیاب کاتێک گۆڕانکاری ڕوودەدات
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'radio' && e.target.name.startsWith('attendance-')) {
+                updateAttendanceCount();
+                
+                // گۆڕینی ڕەنگی کارتەکە
+                const card = e.target.closest('.student-card');
+                if (card) {
+                    if (e.target.id.startsWith('present-')) {
+                        card.classList.remove('absent');
+                        card.classList.add('present');
+                    } else {
+                        card.classList.remove('present');
+                        card.classList.add('absent');
+                    }
+                }
+            }
         });
     </script>
 </body>
