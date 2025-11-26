@@ -244,6 +244,26 @@
                                             <label for="attendanceCourse" class="form-label">ناوی وانە</label>
                                             <input type="text" class="form-control" id="attendanceCourse" placeholder="ناوی وانە بنووسە..." required>
                                         </div>
+                                        <div class="mb-3">
+                                            <label for="attendanceLevel" class="form-label">قۆناغ</label>
+                                            <select class="form-select" id="attendanceLevel">
+                                                <option value="">هەموو قۆناغەکان</option>
+                                                <option value="1">قۆناغی 1</option>
+                                                <option value="2">قۆناغی 2</option>
+                                                <option value="3">قۆناغی 3</option>
+                                                <option value="4">قۆناغی 4</option>
+                                                <option value="5">قۆناغی 5</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="attendanceGroup" class="form-label">گروپ</label>
+                                            <select class="form-select" id="attendanceGroup">
+                                                <option value="">هەموو گروپەکان</option>
+                                                <option value="A">گروپ A</option>
+                                                <option value="B">گروپ B</option>
+                                                <option value="C">گروپ C</option>
+                                            </select>
+                                        </div>
                                         <button class="btn btn-primary" id="loadStudentsBtn">بارکردنی قوتابیان</button>
                                     </div>
                                 </div>
@@ -924,6 +944,8 @@
         function loadStudentsForAttendance() {
             const date = document.getElementById('attendanceDate').value;
             const course = document.getElementById('attendanceCourse').value;
+            const selectedLevel = document.getElementById('attendanceLevel').value;
+            const selectedGroup = document.getElementById('attendanceGroup').value;
             
             if (!date || !course) {
                 alert('تکایە بەروار و ناوی وانە پڕبکەرەوە!');
@@ -933,13 +955,24 @@
             const studentsList = document.getElementById('studentsAttendanceList');
             studentsList.innerHTML = '';
             
-            if (students.length === 0) {
-                studentsList.innerHTML = '<div class="col-12 text-center"><p>هیچ قوتابیەک تۆمار نەکراوە</p></div>';
+            // فیلتەرکردنی قوتابیان بە پێی قۆناغ و گروپ
+            let filteredStudents = students;
+            
+            if (selectedLevel) {
+                filteredStudents = filteredStudents.filter(student => student.level === selectedLevel);
+            }
+            
+            if (selectedGroup) {
+                filteredStudents = filteredStudents.filter(student => student.group === selectedGroup);
+            }
+            
+            if (filteredStudents.length === 0) {
+                studentsList.innerHTML = '<div class="col-12 text-center"><p>هیچ قوتابیەک بەم هەڵبژاردنە نەدۆزرایەوە</p></div>';
                 updateAttendanceCount();
                 return;
             }
             
-            students.forEach(student => {
+            filteredStudents.forEach(student => {
                 // پشکنین بۆ دۆزینەوەی غیابەکانی پێشوو بۆ ئەم بەروارە و وانەیە
                 const existingAttendance = attendance.find(a => 
                     a.studentId === student.id && 
@@ -977,8 +1010,20 @@
         
         // نوێکردنەوەی ژمارەی حەضر و غیاب
         function updateAttendanceCount() {
+            const selectedLevel = document.getElementById('attendanceLevel').value;
+            const selectedGroup = document.getElementById('attendanceGroup').value;
+            
+            // فیلتەرکردنی قوتابیان بە هەمان شێوە
+            let filteredStudents = students;
+            if (selectedLevel) {
+                filteredStudents = filteredStudents.filter(student => student.level === selectedLevel);
+            }
+            if (selectedGroup) {
+                filteredStudents = filteredStudents.filter(student => student.group === selectedGroup);
+            }
+            
             const presentCount = document.querySelectorAll('input[type="radio"]:checked.btn-check').length;
-            const absentCount = students.length - presentCount;
+            const absentCount = filteredStudents.length - presentCount;
             
             document.getElementById('presentCount').textContent = presentCount;
             document.getElementById('absentCount').textContent = absentCount;
@@ -988,18 +1033,29 @@
         function saveAttendance() {
             const date = document.getElementById('attendanceDate').value;
             const course = document.getElementById('attendanceCourse').value;
+            const selectedLevel = document.getElementById('attendanceLevel').value;
+            const selectedGroup = document.getElementById('attendanceGroup').value;
             
             if (!date || !course) {
                 alert('تکایە بەروار و ناوی وانە پڕبکەرەوە!');
                 return;
             }
             
+            // فیلتەرکردنی قوتابیان بە هەمان شێوە
+            let filteredStudents = students;
+            if (selectedLevel) {
+                filteredStudents = filteredStudents.filter(student => student.level === selectedLevel);
+            }
+            if (selectedGroup) {
+                filteredStudents = filteredStudents.filter(student => student.group === selectedGroup);
+            }
+            
             // سڕینەوەی هەموو غیابەکانی پێشوو بۆ ئەم بەروارە و وانەیە
             attendance = attendance.filter(a => !(a.date === date && a.course === course));
             
             // زیادکردنی غیابە نوێیەکان
-            students.forEach(student => {
-                const isPresent = document.getElementById(`present-${student.id}`).checked;
+            filteredStudents.forEach(student => {
+                const isPresent = document.getElementById(`present-${student.id}`)?.checked || false;
                 
                 const attendanceRecord = {
                     id: `${student.id}-${date}-${course}`,
@@ -1019,10 +1075,28 @@
         
         // نیشانەکردنی هەموو حەضر
         function markAllPresent() {
-            students.forEach(student => {
+            const selectedLevel = document.getElementById('attendanceLevel').value;
+            const selectedGroup = document.getElementById('attendanceGroup').value;
+            
+            let filteredStudents = students;
+            if (selectedLevel) {
+                filteredStudents = filteredStudents.filter(student => student.level === selectedLevel);
+            }
+            if (selectedGroup) {
+                filteredStudents = filteredStudents.filter(student => student.group === selectedGroup);
+            }
+            
+            filteredStudents.forEach(student => {
                 const presentRadio = document.getElementById(`present-${student.id}`);
                 if (presentRadio) {
                     presentRadio.checked = true;
+                    
+                    // نوێکردنەوەی ڕەنگی کارت
+                    const card = presentRadio.closest('.student-card');
+                    if (card) {
+                        card.classList.remove('absent');
+                        card.classList.add('present');
+                    }
                 }
             });
             updateAttendanceCount();
@@ -1030,10 +1104,28 @@
         
         // نیشانەکردنی هەموو غیاب
         function markAllAbsent() {
-            students.forEach(student => {
+            const selectedLevel = document.getElementById('attendanceLevel').value;
+            const selectedGroup = document.getElementById('attendanceGroup').value;
+            
+            let filteredStudents = students;
+            if (selectedLevel) {
+                filteredStudents = filteredStudents.filter(student => student.level === selectedLevel);
+            }
+            if (selectedGroup) {
+                filteredStudents = filteredStudents.filter(student => student.group === selectedGroup);
+            }
+            
+            filteredStudents.forEach(student => {
                 const absentRadio = document.getElementById(`absent-${student.id}`);
                 if (absentRadio) {
                     absentRadio.checked = true;
+                    
+                    // نوێکردنەوەی ڕەنگی کارت
+                    const card = absentRadio.closest('.student-card');
+                    if (card) {
+                        card.classList.remove('present');
+                        card.classList.add('absent');
+                    }
                 }
             });
             updateAttendanceCount();
@@ -1043,13 +1135,28 @@
         function exportAttendanceReport() {
             const date = document.getElementById('attendanceDate').value;
             const course = document.getElementById('attendanceCourse').value;
+            const selectedLevel = document.getElementById('attendanceLevel').value;
+            const selectedGroup = document.getElementById('attendanceGroup').value;
             
             if (!date || !course) {
                 alert('تکایە بەروار و ناوی وانە پڕبکەرەوە!');
                 return;
             }
             
-            const todayAttendance = attendance.filter(a => a.date === date && a.course === course);
+            // فیلتەرکردنی قوتابیان بە هەمان شێوە
+            let filteredStudents = students;
+            if (selectedLevel) {
+                filteredStudents = filteredStudents.filter(student => student.level === selectedLevel);
+            }
+            if (selectedGroup) {
+                filteredStudents = filteredStudents.filter(student => student.group === selectedGroup);
+            }
+            
+            const todayAttendance = attendance.filter(a => 
+                a.date === date && 
+                a.course === course &&
+                filteredStudents.find(s => s.id === a.studentId)
+            );
             
             if (todayAttendance.length === 0) {
                 alert('هیچ زانیاریەکی غیابات بۆ ئەم بەروارە نییە!');
@@ -1063,6 +1170,8 @@
                 <h2 style="text-align: center; color: #4e73df;">ڕاپۆرتی غیابات</h2>
                 <h3 style="text-align: center;">${course}</h3>
                 <p style="text-align: center;"><strong>بەروار:</strong> ${date}</p>
+                ${selectedLevel ? `<p style="text-align: center;"><strong>قۆناغ:</strong> ${selectedLevel}</p>` : ''}
+                ${selectedGroup ? `<p style="text-align: center;"><strong>گروپ:</strong> ${selectedGroup}</p>` : ''}
                 <hr>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <thead>
