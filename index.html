@@ -446,10 +446,7 @@
                                             <label for="backupFile" class="form-label">فایلی بەکەپ</label>
                                             <input type="file" class="form-control" id="backupFile" accept=".json">
                                         </div>
-                                        <div class="d-grid gap-2 d-md-flex">
-                                            <button class="btn btn-info me-md-2" id="previewBackupBtn">پشکنینی فایل</button>
-                                            <button class="btn btn-primary" id="restoreBtn">خوێندنەوەی بەکەپ</button>
-                                        </div>
+                                        <button class="btn btn-primary" id="restoreBtn">خوێندنەوەی بەکەپ</button>
                                     </div>
                                 </div>
                                 
@@ -596,9 +593,6 @@
             
             // خوێندنەوەی بەکەپ
             document.getElementById('restoreBtn').addEventListener('click', restoreData);
-            
-            // پشکنینی فایلی باکەپ
-            document.getElementById('previewBackupBtn').addEventListener('click', previewBackupFile);
             
             // بارکردنی زانیاری لە سیستەمەکانی تر
             document.getElementById('importBtn').addEventListener('click', importData);
@@ -788,56 +782,6 @@
             alert('بەکەپ بە سەرکەوتوویی دروست کرا!');
         }
         
-        // فەنکشنی نوێ بۆ پشکنینی فایلی باکەپ
-        function previewBackupFile() {
-            const fileInput = document.getElementById('backupFile');
-            if (fileInput.files.length === 0) {
-                alert('تکایە فایلی باکەپ هەڵبژێرە!');
-                return;
-            }
-            
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    let previewText = 'زانیاریەکانی فایلی باکەپ:\n\n';
-                    
-                    if (data.students) {
-                        previewText += `📊 کۆی قوتابیان: ${data.students.length}\n`;
-                        if (data.students.length > 0) {
-                            previewText += `نمونە: ${data.students[0].name} (باوک: ${data.students[0].fatherName})\n`;
-                        }
-                    }
-                    
-                    if (data.attendance) {
-                        previewText += `📅 کۆی تۆماری غیابات: ${data.attendance.length}\n`;
-                        if (data.attendance.length > 0) {
-                            const sample = data.attendance[0];
-                            previewText += `نمونە: ${sample.studentName} - ${sample.date} - `;
-                            previewText += `کۆڕس: ${sample.courseName || sample.course || 'نەناسراو'} - `;
-                            previewText += `کاتژمێر: ${sample.hours || 'نەناسراو'}\n`;
-                        }
-                    }
-                    
-                    if (data.grades) {
-                        previewText += `🎓 کۆی نمرەکان: ${data.grades.length}\n`;
-                    }
-                    
-                    if (data.backupDate) {
-                        previewText += `📅 بەرواری باکەپ: ${new Date(data.backupDate).toLocaleDateString('ar-KU')}\n`;
-                    }
-                    
-                    alert(previewText);
-                } catch (error) {
-                    alert('هەڵە لە خوێندنەوەی فایل: ' + error.message);
-                }
-            };
-            
-            reader.readAsText(file);
-        }
-        
         // خوێندنەوەی بەکەپ
         function restoreData() {
             const fileInput = document.getElementById('backupFile');
@@ -899,57 +843,23 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    let importedStudentsCount = 0;
-                    let importedAttendanceCount = 0;
+                    let importedCount = 0;
                     
                     // زیادکردنی قوتابیان
                     if (data.students) {
                         data.students.forEach(newStudent => {
                             if (!students.find(s => s.id === newStudent.id)) {
                                 students.push(newStudent);
-                                importedStudentsCount++;
+                                importedCount++;
                             }
                         });
                     }
                     
-                    // زیادکردنی غیابات - چاککردن بۆ سیستەمی کۆن
+                    // زیادکردنی غیابات
                     if (data.attendance) {
                         data.attendance.forEach(newAttendance => {
-                            // پشکنین بۆ ناوی کۆڕس لە سیستەمی کۆن
-                            const courseName = newAttendance.courseName || newAttendance.course || "وانەی نەناسراو";
-                            
-                            // پشکنین بۆ کۆی کاتژمێرەکانی غیاب
-                            const hours = newAttendance.hours || 1;
-                            
-                            // دروستکردنی غیاب بە شێوازی نوێ
-                            const attendanceRecord = {
-                                id: `${newAttendance.studentId}-${newAttendance.date}-${courseName}`,
-                                studentId: newAttendance.studentId,
-                                studentName: newAttendance.studentName,
-                                date: newAttendance.date,
-                                course: courseName,
-                                present: hours === 0 // ئەگەر کاتژمێرەکانی غیاب 0 بێت، واتە حەضرە
-                            };
-                            
-                            if (!attendance.find(a => a.id === attendanceRecord.id)) {
-                                attendance.push(attendanceRecord);
-                                importedAttendanceCount++;
-                            }
-                        });
-                    }
-                    
-                    // زیادکردنی نمرەکان (ئەگەر هەیە) - بۆ ئەوەی ناوی قوتابیەکان بە ڕێک بێت
-                    if (data.grades) {
-                        data.grades.forEach(grade => {
-                            // تەنها بۆ دڵنیابوونەوە لەوەی کە ناوی قوتابی لە غیاباتدا ڕێکە
-                            const student = students.find(s => s.id === grade.studentId);
-                            if (student && student.name !== grade.studentName) {
-                                // نوێکردنەوەی ناوی قوتابی لە غیاباتدا
-                                attendance.forEach(a => {
-                                    if (a.studentId === grade.studentId) {
-                                        a.studentName = student.name;
-                                    }
-                                });
+                            if (!attendance.find(a => a.id === newAttendance.id)) {
+                                attendance.push(newAttendance);
                             }
                         });
                     }
@@ -957,18 +867,7 @@
                     localStorage.setItem('students', JSON.stringify(students));
                     localStorage.setItem('attendance', JSON.stringify(attendance));
                     
-                    let message = '';
-                    if (importedStudentsCount > 0) {
-                        message += `${importedStudentsCount} قوتابی بە سەرکەوتوویی بارکران!\n`;
-                    }
-                    if (importedAttendanceCount > 0) {
-                        message += `${importedAttendanceCount} تۆماری غیابات بارکرا!\n`;
-                    }
-                    if (message === '') {
-                        message = 'هیچ زانیاریەکی نوێ نەبارکرا.';
-                    }
-                    
-                    alert(message);
+                    alert(`${importedCount} قوتابی بە سەرکەوتوویی بارکران!`);
                     displayStudentsList();
                 } catch (error) {
                     alert('هەڵە لە خوێندنەوەی فایل: ' + error.message);
@@ -1127,12 +1026,6 @@
                 }
             });
             updateAttendanceCount();
-            
-            // نوێکردنەوەی ڕەنگی کارتەکان
-            document.querySelectorAll('.student-card').forEach(card => {
-                card.classList.remove('absent');
-                card.classList.add('present');
-            });
         }
         
         // نیشانەکردنی هەموو غیاب
@@ -1144,12 +1037,6 @@
                 }
             });
             updateAttendanceCount();
-            
-            // نوێکردنەوەی ڕەنگی کارتەکان
-            document.querySelectorAll('.student-card').forEach(card => {
-                card.classList.remove('present');
-                card.classList.add('absent');
-            });
         }
         
         // هەناردنی ڕاپۆرتی غیابات
